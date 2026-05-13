@@ -754,6 +754,16 @@ legend {
   color: var(--red);
 }
 
+.tag.running {
+  background: rgba(83, 190, 239, 0.16);
+  color: var(--cyan);
+}
+
+.tag.failed {
+  background: rgba(255, 107, 92, 0.16);
+  color: var(--red);
+}
+
 .queue-item {
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -778,6 +788,11 @@ legend {
   border-color: transparent;
   background: var(--accent);
   color: var(--dark-ink);
+}
+
+.mini-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .mini-button.danger {

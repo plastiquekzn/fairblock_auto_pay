@@ -18,6 +18,7 @@ const BASE_SEPOLIA = {
 const stabletrustClient = new ConfidentialTransferClient(BASE_SEPOLIA.rpcUrl, BASE_SEPOLIA.chainId);
 const STORAGE_KEY = "stabletrust-autopay-studio:v2";
 const AGENT_KEY_STORAGE_KEY = "stabletrust-autopay-studio:test-agent-key";
+const executingTransfers = new Set();
 
 const state = {
   mode: "mock",
@@ -51,7 +52,11 @@ function loadSavedState() {
       state.recipients = saved.recipients;
     }
     if (Array.isArray(saved.queue)) {
-      state.queue = saved.queue;
+      state.queue = saved.queue.map((item) =>
+        item.status === "running"
+          ? { ...item, status: "failed", error: "Interrupted while sending; create a new task if needed." }
+          : item
+      );
     }
     if (Array.isArray(saved.activity)) {
       state.activity = saved.activity;
@@ -273,6 +278,11 @@ function renderRecipients() {
 }
 
 function evaluateQueueItem(item) {
+  if (item.status === "sent") return { status: "sent", reason: "Already sent" };
+  if (item.status === "running" || executingTransfers.has(item.id)) {
+    return { status: "running", reason: "Sending now" };
+  }
+  if (item.status === "failed") return { status: "failed", reason: "Failed; create a new task" };
   const recipient = getRecipient(item.recipientId);
   if (!recipient?.approved) return { status: "blocked", reason: "Recipient not approved" };
   if (!item.approved) return { status: "waiting", reason: "Approval required" };
@@ -284,8 +294,9 @@ function renderQueue() {
     .filter((item) => item.status !== "sent")
     .map((item) => {
       const check = evaluateQueueItem(item);
-      item.status = check.status;
       const recipient = getRecipient(item.recipientId);
+      const canApprove = check.status === "waiting";
+      const canRun = check.status === "ready";
       return `
         <div class="queue-item">
           <div>
@@ -298,8 +309,8 @@ function renderQueue() {
             </div>
           </div>
           <div class="queue-actions">
-            <button class="mini-button" data-approve="${item.id}" type="button">Approve</button>
-            <button class="mini-button execute" data-execute="${item.id}" type="button">Run</button>
+            <button class="mini-button" data-approve="${item.id}" type="button" ${canApprove ? "" : "disabled"}>Approve</button>
+            <button class="mini-button execute" data-execute="${item.id}" type="button" ${canRun ? "" : "disabled"}>Run</button>
           </div>
         </div>
       `;
@@ -1047,6 +1058,9 @@ if (window.ethereum) {
 async function executeItem(id) {
   const item = state.queue.find((candidate) => candidate.id === id);
   if (!item) return;
+  if (item.status === "sent" || item.status === "running" || executingTransfers.has(id)) {
+    return;
+  }
 
   const check = evaluateQueueItem(item);
   if (check.status !== "ready") {
@@ -1055,9 +1069,15 @@ async function executeItem(id) {
   }
 
   try {
+    executingTransfers.add(id);
+    item.status = "running";
+    item.startedAt = Date.now();
+    saveState();
+    renderAll();
     showToast("Submitting confidential transfer...");
     const result = await stabletrustTransfer(item);
     item.status = "sent";
+    item.sentAt = Date.now();
     saveState();
     addActivityWithMeta(
       "Confidential transfer submitted",
@@ -1067,8 +1087,14 @@ async function executeItem(id) {
     renderAll();
     showToast("Transfer submitted");
   } catch (error) {
+    item.status = "failed";
+    item.error = error.message;
+    saveState();
+    renderAll();
     addActivity("Transfer failed", error.message);
     showToast(error.message);
+  } finally {
+    executingTransfers.delete(id);
   }
 }
 
