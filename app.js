@@ -507,6 +507,33 @@ function getInjectedWallet() {
   return window.ethereum;
 }
 
+function isUnrecognizedChainError(error) {
+  const message = String(error?.message || "").toLowerCase();
+  return (
+    error?.code === 4902 ||
+    error?.data?.originalError?.code === 4902 ||
+    message.includes("unrecognized chain") ||
+    message.includes("unknown chain") ||
+    message.includes("chain has not been added") ||
+    message.includes(BASE_SEPOLIA.chainHex.toLowerCase())
+  );
+}
+
+async function addBaseSepolia(ethereum) {
+  await ethereum.request({
+    method: "wallet_addEthereumChain",
+    params: [
+      {
+        chainId: BASE_SEPOLIA.chainHex,
+        chainName: BASE_SEPOLIA.name,
+        nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
+        rpcUrls: [BASE_SEPOLIA.rpcUrl],
+        blockExplorerUrls: [BASE_SEPOLIA.blockExplorerUrl]
+      }
+    ]
+  });
+}
+
 async function switchToBaseSepolia() {
   const ethereum = getInjectedWallet();
   try {
@@ -515,18 +542,11 @@ async function switchToBaseSepolia() {
       params: [{ chainId: BASE_SEPOLIA.chainHex }]
     });
   } catch (error) {
-    if (error.code !== 4902) throw error;
+    if (!isUnrecognizedChainError(error)) throw error;
+    await addBaseSepolia(ethereum);
     await ethereum.request({
-      method: "wallet_addEthereumChain",
-      params: [
-        {
-          chainId: BASE_SEPOLIA.chainHex,
-          chainName: BASE_SEPOLIA.name,
-          nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
-          rpcUrls: [BASE_SEPOLIA.rpcUrl],
-          blockExplorerUrls: [BASE_SEPOLIA.blockExplorerUrl]
-        }
-      ]
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: BASE_SEPOLIA.chainHex }]
     });
   }
 }
