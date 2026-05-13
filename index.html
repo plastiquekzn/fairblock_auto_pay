@@ -209,8 +209,13 @@
                 Agent private key
                 <input id="agentPrivateKeyInput" type="password" placeholder="0x..." autocomplete="off" spellcheck="false" />
               </label>
+              <label class="check-row">
+                <input id="rememberAgentKeyCheck" type="checkbox" />
+                <span>Remember test agent key in this browser</span>
+              </label>
               <div class="wallet-actions">
                 <button class="primary-button" id="loadAgentKeyButton" type="button">Load key</button>
+                <button class="ghost-button" id="forgetAgentKeyButton" type="button">Forget key</button>
                 <button class="ghost-button" id="initAgentButton" type="button">Check API agent</button>
                 <button class="ghost-button" id="startSchedulerButton" type="button">Start auto</button>
                 <button class="ghost-button" id="stopSchedulerButton" type="button">Stop auto</button>
@@ -228,7 +233,7 @@
               </div>
               <div id="agentChatLog" class="agent-chat-log"></div>
               <form id="agentChatForm" class="agent-chat-form">
-                <input id="agentChatInput" placeholder="Отправь 1 USDC 0x... через 5 минут" autocomplete="off" />
+                <input id="agentChatInput" placeholder="send 1 USDC to 0x... in 5 minutes" autocomplete="off" />
                 <button class="primary-button" type="submit">Send</button>
               </form>
             </div>

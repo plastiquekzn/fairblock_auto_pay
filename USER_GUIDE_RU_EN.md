@@ -162,7 +162,9 @@ npm run agent
 4. Нажми `Load key`.
 5. Нажми `Check API agent`.
 
-Private key не сохраняется в `localStorage`; он находится только в памяти локального Node.js процесса. Для production нужен безопасный backend, smart account/session key, embedded wallet, TEE, MPC или другая custody-архитектура.
+Если включить `Remember test agent key in this browser`, тестовый private key сохранится в `localStorage` этого браузера. Это удобно для демо, но используй только отдельный testnet `Agent wallet`. Кнопка `Forget key` удаляет сохраненный ключ.
+
+Для production нужен безопасный backend, smart account/session key, embedded wallet, TEE, MPC или другая custody-архитектура.
 
 ### 11. Agent Chat
 
@@ -366,7 +368,9 @@ In the UI:
 4. Click `Load key`.
 5. Click `Check API agent`.
 
-The private key is not saved to `localStorage`; it only lives in local Node.js process memory. Production needs a secure backend, smart account/session key, embedded wallet, TEE, MPC, or another custody architecture.
+If `Remember test agent key in this browser` is enabled, the test private key is stored in this browser's `localStorage`. This is convenient for demos, but use only a dedicated testnet `Agent wallet`. `Forget key` removes the saved key.
+
+Production needs a secure backend, smart account/session key, embedded wallet, TEE, MPC, or another custody architecture.
 
 ### 11. Agent Chat
 

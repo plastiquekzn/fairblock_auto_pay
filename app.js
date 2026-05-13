@@ -17,6 +17,7 @@ const BASE_SEPOLIA = {
 };
 const stabletrustClient = new ConfidentialTransferClient(BASE_SEPOLIA.rpcUrl, BASE_SEPOLIA.chainId);
 const STORAGE_KEY = "stabletrust-autopay-studio:v2";
+const AGENT_KEY_STORAGE_KEY = "stabletrust-autopay-studio:test-agent-key";
 
 const state = {
   mode: "mock",
@@ -111,6 +112,8 @@ const els = {
   withdrawButton: document.querySelector("#withdrawButton"),
   addRecipientInlineButton: document.querySelector("#addRecipientInlineButton"),
   agentPrivateKeyInput: document.querySelector("#agentPrivateKeyInput"),
+  rememberAgentKeyCheck: document.querySelector("#rememberAgentKeyCheck"),
+  forgetAgentKeyButton: document.querySelector("#forgetAgentKeyButton"),
   loadAgentKeyButton: document.querySelector("#loadAgentKeyButton"),
   initAgentButton: document.querySelector("#initAgentButton"),
   startSchedulerButton: document.querySelector("#startSchedulerButton"),
@@ -630,6 +633,33 @@ async function agentApiGet(path) {
   return payload;
 }
 
+function getSavedAgentKey() {
+  return localStorage.getItem(AGENT_KEY_STORAGE_KEY) || "";
+}
+
+function rememberAgentKey(privateKey) {
+  localStorage.setItem(AGENT_KEY_STORAGE_KEY, privateKey);
+}
+
+function forgetAgentKey() {
+  localStorage.removeItem(AGENT_KEY_STORAGE_KEY);
+  els.agentPrivateKeyInput.value = "";
+  els.rememberAgentKeyCheck.checked = false;
+  state.agent.address = "";
+  state.agent.keys = null;
+  addActivity("Agent key forgotten", "Saved test agent key was removed from this browser.");
+  renderAll();
+  showToast("Saved test key removed");
+}
+
+function hydrateSavedAgentKey() {
+  const savedKey = getSavedAgentKey();
+  if (!savedKey) return;
+  els.agentPrivateKeyInput.value = savedKey;
+  els.rememberAgentKeyCheck.checked = true;
+  els.agentModeLabel.textContent = "Saved test key found in this browser. Click Load key.";
+}
+
 function getExecutionSigner() {
   if (state.wallet.signer && state.wallet.keys) {
     return { signer: state.wallet.signer, keys: state.wallet.keys, address: state.wallet.address, source: "wallet" };
@@ -647,8 +677,16 @@ function loadAgentKey() {
       state.agent.wallet = null;
       state.agent.address = payload.address;
       state.agent.keys = { api: true };
+      if (els.rememberAgentKeyCheck.checked) {
+        rememberAgentKey(privateKey);
+      }
       els.agentPrivateKeyInput.value = "";
-      addActivity("Agent key loaded", `${shortenAddress(state.agent.address)} loaded into local API agent memory.`);
+      addActivity(
+        "Agent key loaded",
+        els.rememberAgentKeyCheck.checked
+          ? `${shortenAddress(state.agent.address)} loaded and remembered in this browser.`
+          : `${shortenAddress(state.agent.address)} loaded into local API agent memory.`
+      );
       renderAll();
       showToast("Agent key loaded in API agent");
     }).catch((error) => {
@@ -1154,6 +1192,7 @@ els.refreshWalletBalanceButton.addEventListener("click", refreshWalletBalances);
 els.depositButton.addEventListener("click", depositFromWallet);
 els.withdrawButton.addEventListener("click", withdrawToWallet);
 els.loadAgentKeyButton.addEventListener("click", loadAgentKey);
+els.forgetAgentKeyButton.addEventListener("click", forgetAgentKey);
 els.initAgentButton.addEventListener("click", initializeAgentAccount);
 els.startSchedulerButton.addEventListener("click", startScheduler);
 els.stopSchedulerButton.addEventListener("click", stopScheduler);
@@ -1178,4 +1217,5 @@ els.clearAgentChatButton.addEventListener("click", () => {
   });
 });
 
+hydrateSavedAgentKey();
 renderAll();

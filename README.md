@@ -101,7 +101,7 @@ Then in the UI:
 3. Click `Check API agent`.
 4. Use the task builder or Agent Chat.
 
-The private key is kept in local Node.js process memory and is not written to `localStorage`. Use a fresh testnet wallet only.
+For convenience, `Remember test agent key in this browser` can store the dedicated testnet agent key in this browser's `localStorage`. Use this only with a fresh testnet wallet. Click `Forget key` to remove it.
 
 ## Agent Chat
 
