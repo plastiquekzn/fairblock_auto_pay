@@ -716,7 +716,7 @@ legend {
 }
 
 .recipient {
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
 }
 
@@ -794,6 +794,11 @@ legend {
   border-color: transparent;
   background: var(--accent);
   color: var(--dark-ink);
+}
+
+.mini-button.danger {
+  border-color: rgba(255, 107, 92, 0.38);
+  color: #ff9f95;
 }
 
 .log-item {

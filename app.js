@@ -239,6 +239,7 @@ function renderRecipients() {
           <span class="tag ${recipient.approved ? "ready" : "waiting"}">
             ${recipient.approved ? "Approved" : "Review"}
           </span>
+          <button class="mini-button danger" data-remove-recipient="${recipient.id}" type="button">Remove</button>
         </div>
       `
     )
@@ -1119,6 +1120,23 @@ function addRecipient() {
   }
 }
 
+function removeRecipient(id) {
+  const recipient = getRecipient(id);
+  if (!recipient) return;
+  const beforeQueueLength = state.queue.length;
+  state.recipients = state.recipients.filter((item) => item.id !== id);
+  state.queue = state.queue.filter((item) => item.recipientId !== id || item.status === "sent");
+  const removedQueueCount = beforeQueueLength - state.queue.length;
+  saveState();
+  addActivity(
+    "Recipient removed",
+    removedQueueCount
+      ? `${recipient.name} removed from allowlist; ${removedQueueCount} queued task(s) removed.`
+      : `${recipient.name} removed from allowlist.`
+  );
+  renderAll();
+}
+
 function runDue() {
   runDueTransfers();
 }
@@ -1137,6 +1155,13 @@ document.querySelector("#queueList").addEventListener("click", (event) => {
 
   if (executeId) {
     executeItem(executeId);
+  }
+});
+
+els.recipientList.addEventListener("click", (event) => {
+  const removeId = event.target.dataset.removeRecipient;
+  if (removeId) {
+    removeRecipient(removeId);
   }
 });
 
