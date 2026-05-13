@@ -670,12 +670,13 @@ legend {
 
 .agent-chat-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 1fr;
   gap: 8px;
 }
 
 .agent-chat-form .primary-button {
-  min-width: 82px;
+  width: 100%;
+  min-height: 48px;
 }
 
 .recipient-list,
