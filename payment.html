@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stabletrust Payment Tools</title>
+    <meta name="description" content="Simple confidential payment actions for Stabletrust on Base Sepolia." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="workspace single-page">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Base Sepolia</p>
+          <h1>Confidential payment tools</h1>
+        </div>
+        <div class="topbar-actions">
+          <a class="ghost-link-button" href="/">Back to agent studio</a>
+        </div>
+      </header>
+
+      <section class="panel action-workspace">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Wallet controls</p>
+            <h2 id="actionTitle">Check incoming confidential payment</h2>
+          </div>
+          <span class="network-pill">84532</span>
+        </div>
+
+        <div class="action-grid">
+          <button class="primary-button" id="quickReceiveButton" type="button">Check incoming confidential payment</button>
+          <button class="ghost-button" id="quickSendButton" type="button">Send confidential payment</button>
+          <button class="ghost-button" id="quickWithdrawButton" type="button">Withdraw to public</button>
+        </div>
+
+        <div class="action-toolbar">
+          <button class="primary-button" id="actionConnectButton" type="button">Connect</button>
+          <button class="ghost-button" id="actionSwitchNetworkButton" type="button">Base Sepolia</button>
+          <button class="ghost-button" id="actionActivateButton" type="button">Activate Fairblock account</button>
+          <button class="ghost-button" id="actionRefreshButton" type="button">Refresh balance</button>
+        </div>
+
+        <div class="wallet-card">
+          <span>Connected wallet</span>
+          <strong id="walletAddressLabel">Not connected</strong>
+          <small id="chainLabel">Connect MetaMask or another EVM wallet.</small>
+          <small id="selfAccountStatusLabel">Stabletrust account status not checked.</small>
+        </div>
+
+        <div class="action-mode" id="receiveAction">
+          <p class="action-copy">Connect the receiving wallet, activate Fairblock if needed, then refresh to decrypt incoming confidential USDC.</p>
+          <div class="wallet-balances compact-balances">
+            <div>
+              <span>Public USDC</span>
+              <strong id="actionPublicBalance">--</strong>
+            </div>
+            <div>
+              <span>Confidential USDC</span>
+              <strong id="actionConfidentialBalance">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-mode hidden" id="sendAction">
+          <div class="two-col">
+            <label>
+              Recipient address
+              <input id="simpleRecipientInput" placeholder="0x..." autocomplete="off" spellcheck="false" />
+            </label>
+            <label>
+              Amount
+              <input id="simpleSendAmountInput" inputmode="decimal" value="1.00" />
+            </label>
+          </div>
+          <div class="recipient-check">
+            <span id="simpleRecipientStatusLabel">Recipient status not checked.</span>
+            <button class="ghost-button" id="simpleCheckRecipientButton" type="button">Check recipient</button>
+          </div>
+          <button class="primary-button wide" id="simpleSendButton" type="button">Send confidential payment</button>
+        </div>
+
+        <div class="action-mode hidden" id="withdrawAction">
+          <label>
+            Amount to withdraw
+            <input id="simpleWithdrawAmountInput" inputmode="decimal" value="1.00" />
+          </label>
+          <button class="primary-button wide" id="simpleWithdrawButton" type="button">Withdraw to public USDC</button>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/payment.js"></script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "name": "stabletrust-autopay-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "No-code confidential payment agent prototype powered by Fairblock Stabletrust concepts.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 3000",
+    "build": "vite build",
+    "agent": "node api-agent.mjs",
+    "check": "node --check app.js && node --check server.mjs && node --check api-agent.mjs"
+  },
+  "dependencies": {
+    "@fairblock/stabletrust": "^1.0.21",
+    "buffer": "^6.0.3",
+    "ethers": "^6.16.0",
+    "vite": "^8.0.12"
+  }
+}

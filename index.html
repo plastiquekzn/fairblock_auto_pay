@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stabletrust Autopay Studio</title>
+    <meta name="description" content="No-code private payment agents for scheduled confidential transfers." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <main class="workspace">
+        <section class="app-header">
+          <div class="brand">
+            <div class="brand-mark">S</div>
+            <div>
+              <strong>Autopay Studio</strong>
+              <span>Stabletrust agents on Base Sepolia</span>
+            </div>
+          </div>
+
+          <div class="agent-status">
+            <span class="pulse"></span>
+            <div>
+              <strong id="agentStateLabel">Wallet not connected</strong>
+              <span id="agentStateDetail">Agent API optional</span>
+            </div>
+          </div>
+        </section>
+
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Confidential payment agents</p>
+            <h1>Private transfers, scheduled by policy</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="ghost-button" id="refreshButton" type="button">Refresh balance</button>
+            <button class="primary-button" id="runDueButton" type="button">Run due</button>
+          </div>
+        </header>
+
+        <section class="metrics" id="overview">
+          <article>
+            <span>Public USDC</span>
+            <strong id="publicMetricLabel">--</strong>
+            <small>Connected wallet balance</small>
+          </article>
+          <article>
+            <span>Confidential USDC</span>
+            <strong id="confidentialMetricLabel">--</strong>
+            <small id="pendingMetricLabel">Refresh after connect</small>
+          </article>
+          <article>
+            <span>Scheduled queue</span>
+            <strong id="queueMetricLabel">0</strong>
+            <small id="nextPaymentDetail">No queued transfers</small>
+          </article>
+          <article>
+            <span>API agent</span>
+            <strong id="agentMetricLabel">Not loaded</strong>
+            <small id="policyChecksLabel">0 ready transfers</small>
+          </article>
+        </section>
+
+        <section class="panel action-panel" id="actions">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Quick actions</p>
+              <h2>Payment tools</h2>
+            </div>
+          </div>
+          <div class="action-grid">
+            <a class="primary-link-button" href="/payment.html">Open payment tools</a>
+          </div>
+        </section>
+
+        <section class="layout-grid">
+          <div class="panel" id="rules">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">No-code builder</p>
+                <h2>Payment task</h2>
+              </div>
+              <button class="ghost-button" id="resetRuleButton" type="button">Reset</button>
+            </div>
+
+            <form id="ruleForm" class="rule-form">
+              <label>
+                Task name
+                <input id="agentName" placeholder="Vendor payout" autocomplete="off" />
+              </label>
+
+              <div class="two-col">
+                <label>
+                  Recipient
+                  <div class="select-with-button">
+                    <select id="recipientSelect"></select>
+                    <button id="addRecipientInlineButton" class="ghost-button square-button" type="button">+</button>
+                  </div>
+                </label>
+                <label>
+                  Token
+                  <select id="tokenSelect">
+                    <option value="USDC">USDC</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="recipient-check">
+                <span id="recipientStatusLabel">Recipient Stabletrust status not checked.</span>
+                <button class="ghost-button" id="checkRecipientButton" type="button">Check recipient</button>
+              </div>
+
+              <div class="two-col">
+                <label>
+                  Amount
+                  <input id="amountInput" inputmode="decimal" value="1.00" />
+                </label>
+                <label>
+                  Cadence
+                  <select id="cadenceSelect">
+                    <option value="once">One time</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="two-col">
+                <label>
+                  Execute at
+                  <input id="timeInput" type="time" value="18:00" />
+                </label>
+                <label>
+                  Requires approval
+                  <select id="approvalSelect">
+                    <option value="no">No</option>
+                    <option value="yes" selected>Yes, first run</option>
+                  </select>
+                </label>
+              </div>
+
+              <fieldset>
+                <legend>Agent policy</legend>
+                <label class="check-row">
+                  <input id="allowlistCheck" type="checkbox" checked />
+                  <span>Only approved recipients</span>
+                </label>
+              </fieldset>
+
+              <button class="primary-button wide" type="submit">Create task</button>
+            </form>
+          </div>
+
+          <div class="panel policy-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Controls</p>
+                <h2>Base Sepolia wallet</h2>
+              </div>
+              <span class="network-pill">84532</span>
+            </div>
+
+            <div class="wallet-card">
+              <span>Connected wallet</span>
+              <strong id="walletAddressLabel">Not connected</strong>
+              <small id="chainLabel">Connect MetaMask or another EVM wallet.</small>
+              <small id="walletFullAddressLabel"></small>
+              <small id="selfAccountStatusLabel">Stabletrust account status not checked.</small>
+              <small id="contractAddressLabel"></small>
+            </div>
+
+            <div class="wallet-actions">
+              <button class="primary-button" id="connectWalletButton" type="button">Connect</button>
+              <button class="ghost-button" id="switchNetworkButton" type="button">Base Sepolia</button>
+              <button class="ghost-button" id="initAccountButton" type="button">Activate Fairblock account</button>
+              <button class="ghost-button" id="refreshWalletBalanceButton" type="button">Refresh balance</button>
+            </div>
+
+            <div class="wallet-balances">
+              <div>
+                <span>Public USDC</span>
+                <strong id="publicUsdcLabel">--</strong>
+              </div>
+              <div>
+                <span>Confidential USDC</span>
+                <strong id="walletConfidentialLabel">--</strong>
+              </div>
+            </div>
+
+            <label class="private-key-field" id="walletAmountField">
+              Amount
+              <input id="testAmountInput" inputmode="decimal" value="1.00" />
+            </label>
+
+            <div class="wallet-actions">
+              <button class="primary-button" id="depositButton" type="button">Deposit confidential</button>
+              <button class="ghost-button" id="withdrawButton" type="button">Withdraw to public</button>
+            </div>
+
+            <div class="agent-key-card">
+              <div>
+                <span>Autonomous agent</span>
+                <strong id="agentWalletLabel">No agent key loaded</strong>
+                <small id="agentModeLabel">Uses local API agent and Stabletrust HTTP API.</small>
+              </div>
+              <label>
+                Agent private key
+                <input id="agentPrivateKeyInput" type="password" placeholder="0x..." autocomplete="off" spellcheck="false" />
+              </label>
+              <div class="wallet-actions">
+                <button class="primary-button" id="loadAgentKeyButton" type="button">Load key</button>
+                <button class="ghost-button" id="initAgentButton" type="button">Check API agent</button>
+                <button class="ghost-button" id="startSchedulerButton" type="button">Start auto</button>
+                <button class="ghost-button" id="stopSchedulerButton" type="button">Stop auto</button>
+              </div>
+            </div>
+
+            <div class="agent-chat-card">
+              <div class="agent-chat-header">
+                <div>
+                  <span>Agent chat</span>
+                  <strong>Tell it what to send</strong>
+                  <small>Example: send 1.5 USDC to 0x... at 18:30</small>
+                </div>
+                <button class="mini-button" id="clearAgentChatButton" type="button">Clear</button>
+              </div>
+              <div id="agentChatLog" class="agent-chat-log"></div>
+              <form id="agentChatForm" class="agent-chat-form">
+                <input id="agentChatInput" placeholder="Отправь 1 USDC 0x... через 5 минут" autocomplete="off" />
+                <button class="primary-button" type="submit">Send</button>
+              </form>
+            </div>
+
+            <div class="recipients">
+              <div class="panel-header compact">
+                <h3>Allowlist</h3>
+                <button id="addRecipientButton" class="ghost-button" type="button">Add</button>
+              </div>
+              <div id="recipientList" class="recipient-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="layout-grid lower">
+          <div class="panel" id="queue">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Execution</p>
+                <h2>Transfer queue</h2>
+              </div>
+              <div class="header-actions">
+                <button class="ghost-button" id="clearQueueButton" type="button">Clear queue</button>
+                <button class="ghost-button" id="approveAllButton" type="button">Approve all</button>
+              </div>
+            </div>
+            <div id="queueList" class="queue-list"></div>
+          </div>
+
+          <div class="panel" id="activity">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Audit</p>
+                <h2>Activity</h2>
+              </div>
+              <button class="ghost-button" id="clearLogButton" type="button">Clear</button>
+            </div>
+            <div id="activityLog" class="activity-log"></div>
+          </div>
+        </section>
+
+        <section class="panel api-panel" id="settings">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Stabletrust API</p>
+              <h2>Generated agent call</h2>
+            </div>
+            <button class="ghost-button" id="copyCurlButton" type="button">Copy</button>
+          </div>
+          <pre id="curlPreview"></pre>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="recipientDialog">
+      <form method="dialog" class="dialog-card">
+        <h2>Add recipient</h2>
+        <label>
+          Name
+          <input id="newRecipientName" placeholder="New vendor" />
+        </label>
+        <label>
+          Address
+          <input id="newRecipientAddress" placeholder="0x..." />
+        </label>
+        <div class="dialog-actions">
+          <button class="ghost-button" value="cancel" type="submit">Cancel</button>
+          <button class="primary-button" id="saveRecipientButton" value="default" type="button">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
