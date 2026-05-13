@@ -1,6 +1,6 @@
 # Stabletrust Autopay Studio
 
-No-code testnet interface for confidential USDC payments and payment-agent experiments using Fairblock Stabletrust on Base Sepolia.
+No-code testnet interface for confidential USDC payments and agent experiments using Fairblock Stabletrust on Base Sepolia.
 
 The app lets users:
 
@@ -9,8 +9,8 @@ The app lets users:
 - deposit public test USDC into a confidential balance;
 - send confidential USDC to another initialized account;
 - withdraw confidential USDC back to public USDC;
-- create scheduled payment tasks;
-- try an autonomous API-agent mode for testnet demos.
+- approve and run one-off private payments from the main screen;
+- try Agent Chat on top of the Vercel API-agent flow.
 
 Detailed bilingual guide:
 
@@ -24,7 +24,7 @@ Recommended wallets:
 
 - `Sender wallet` - used for normal browser wallet actions.
 - `Receiver wallet` - used to receive confidential payments.
-- `Agent wallet` - a dedicated testnet wallet for local autonomous agent demos.
+- `Agent wallet` - a dedicated testnet wallet for autonomous API-agent demos.
 
 Wallets that submit transactions need:
 
@@ -44,6 +44,61 @@ Test USDC used by this prototype:
 ```text
 0x036CbD53842c5426634e7929541eC2318f3dCF7e
 ```
+
+## Main Flow
+
+1. Open `https://fairblock-auto-pay.vercel.app`.
+2. Connect the sender wallet.
+3. Switch to `Base Sepolia`.
+4. Click `Activate Fairblock account`.
+5. Deposit public test USDC with `Deposit confidential`.
+6. Add or select a recipient in `Confidential payment`.
+7. Click `Check recipient`.
+8. Enter amount.
+9. Click `Approve payment` to place it in the queue, or `Run now` to send immediately.
+
+The receiver must also activate a Fairblock account before receiving. If not, transfers can fail with:
+
+```text
+Recipient account does not exist
+```
+
+## Agent Chat
+
+The Agent Chat uses a simple parser for now, not an LLM.
+
+Example commands:
+
+```text
+send 1 USDC to 0x1234... now
+send 2.5 USDC to 0x1234... in 5 minutes
+send 1.5 USDC to 0x1234... at 18:30
+```
+
+The chat can parse the command, add a new recipient to the allowlist, create a payment task, and execute through the API-agent when a dedicated test agent key is loaded.
+
+## API-Agent Demo
+
+The deployed Vercel UI supports wallet-based Stabletrust SDK actions and same-origin API-agent endpoints under `/api/agent/*`. Because the API is on the same Vercel domain, the browser should not request access to local services on the user's device.
+
+In the UI:
+
+1. Use only a dedicated testnet `Agent wallet`.
+2. Fund it with Base Sepolia ETH and test USDC.
+3. Paste its private key into `Agent private key`.
+4. Click `Load key`.
+5. Click `Check API agent`.
+6. Use Agent Chat or `Run now`.
+
+For convenience, `Remember test agent key in this browser` stores the dedicated testnet agent key in this browser's `localStorage`. Requests to `/api/agent/*` include that test key when needed, so Vercel can execute the Stabletrust API call without localhost permissions. Use this only with a fresh testnet wallet. Click `Forget key` to remove it.
+
+For production, move private-key handling to a secure backend, smart-account session key, embedded wallet, TEE, MPC, or another dedicated custody architecture.
+
+## Explorer Links
+
+Submitted deposit, withdrawal, and transfer activity records include a `View tx` link when a real transaction hash is available. Links open the transaction on Base Sepolia BaseScan.
+
+BaseScan shows contract interaction, tx hash, gas, and timestamp. It does not show a normal public ERC-20 transfer line like `A sent exact amount to B`.
 
 ## Local Development
 
@@ -74,46 +129,11 @@ npm run build
 
 ## Vercel Deployment
 
-This is a Vite app. Vercel can deploy the web UI with the default Vite settings:
+This is a Vite app. Vercel can deploy the web UI with:
 
 - Framework preset: `Vite`
 - Build command: `npm run build`
 - Output directory: `dist`
-
-The deployed Vercel UI supports the wallet-based Stabletrust SDK flow and same-origin API-agent endpoints under `/api/agent/*`. Because the API is on the same Vercel domain, the browser should not request access to local services on the user's device.
-
-For production, move private-key handling to a secure backend, embedded wallet, smart-account session key, TEE, MPC, or another dedicated custody architecture.
-
-## API-Agent Demo
-
-The API-agent mode is useful for testnet demos where a dedicated agent wallet sends through the Stabletrust HTTP API.
-
-In the UI:
-
-1. Paste the dedicated testnet `Agent wallet` private key.
-2. Click `Load key`.
-3. Click `Check API agent`.
-4. Use the task builder or Agent Chat.
-
-For convenience, `Remember test agent key in this browser` stores the dedicated testnet agent key in this browser's `localStorage`. Requests to `/api/agent/*` include that test key when needed, so Vercel can execute the Stabletrust API call without asking for localhost permissions. Use this only with a fresh testnet wallet. Click `Forget key` to remove it.
-
-## Agent Chat
-
-The mini chat currently uses a simple local parser, not an LLM.
-
-Example commands:
-
-```text
-send 1 USDC to 0x1234... now
-send 2.5 USDC to 0x1234... in 5 minutes
-send 1.5 USDC to 0x1234... at 18:30
-```
-
-If the agent is ready, the app creates an approved task. If the task is due immediately, it sends through the Vercel API-agent. If it is scheduled for later, the browser scheduler checks due transfers while the page is open.
-
-## Explorer Links
-
-Submitted deposit, withdrawal, and transfer activity records include a `View tx` link when a real transaction hash is available. Links open the transaction on Base Sepolia BaseScan.
 
 ## Stabletrust Integration
 

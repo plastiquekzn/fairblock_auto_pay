@@ -31,11 +31,11 @@
         <header class="topbar">
           <div>
             <p class="eyebrow">Confidential payment agents</p>
-            <h1>Private transfers, scheduled by policy</h1>
+            <h1>Private USDC transfers on Base Sepolia</h1>
           </div>
           <div class="topbar-actions">
             <button class="ghost-button" id="refreshButton" type="button">Refresh balance</button>
-            <button class="primary-button" id="runDueButton" type="button">Run due</button>
+            <button class="primary-button" id="runDueButton" type="button">Run queued</button>
           </div>
         </header>
 
@@ -51,7 +51,7 @@
             <small id="pendingMetricLabel">Refresh after connect</small>
           </article>
           <article>
-            <span>Scheduled queue</span>
+            <span>Transfer queue</span>
             <strong id="queueMetricLabel">0</strong>
             <small id="nextPaymentDetail">No queued transfers</small>
           </article>
@@ -66,18 +66,13 @@
           <div class="panel" id="rules">
             <div class="panel-header">
               <div>
-                <p class="eyebrow">No-code builder</p>
-                <h2>Payment task</h2>
+                <p class="eyebrow">Private transfer</p>
+                <h2>Confidential payment</h2>
               </div>
               <button class="ghost-button" id="resetRuleButton" type="button">Reset</button>
             </div>
 
             <form id="ruleForm" class="rule-form">
-              <label>
-                Task name
-                <input id="agentName" placeholder="Vendor payout" autocomplete="off" />
-              </label>
-
               <div class="two-col">
                 <label>
                   Recipient
@@ -104,29 +99,6 @@
                   Amount
                   <input id="amountInput" inputmode="decimal" value="1.00" />
                 </label>
-                <label>
-                  Cadence
-                  <select id="cadenceSelect">
-                    <option value="once">One time</option>
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                  </select>
-                </label>
-              </div>
-
-              <div class="two-col">
-                <label>
-                  Execute at
-                  <input id="timeInput" type="time" value="18:00" />
-                </label>
-                <label>
-                  Requires approval
-                  <select id="approvalSelect">
-                    <option value="no">No</option>
-                    <option value="yes" selected>Yes, first run</option>
-                  </select>
-                </label>
               </div>
 
               <fieldset>
@@ -137,7 +109,10 @@
                 </label>
               </fieldset>
 
-              <button class="primary-button wide" type="submit">Create task</button>
+              <div class="payment-actions">
+                <button class="ghost-button wide" name="action" value="approve" type="submit">Approve payment</button>
+                <button class="primary-button wide" name="action" value="run" type="submit">Run now</button>
+              </div>
             </form>
           </div>
 
@@ -187,51 +162,53 @@
               <button class="ghost-button" id="withdrawButton" type="button">Withdraw to public</button>
             </div>
 
-            <div class="agent-key-card">
-              <div>
-                <span>Autonomous agent</span>
-                <strong id="agentWalletLabel">No agent key loaded</strong>
-                <small id="agentModeLabel">Uses local API agent and Stabletrust HTTP API.</small>
-              </div>
-              <label>
-                Agent private key
-                <input id="agentPrivateKeyInput" type="password" placeholder="0x..." autocomplete="off" spellcheck="false" />
-              </label>
-              <label class="check-row">
-                <input id="rememberAgentKeyCheck" type="checkbox" />
-                <span>Remember test agent key in this browser</span>
-              </label>
-              <div class="wallet-actions">
-                <button class="primary-button" id="loadAgentKeyButton" type="button">Load key</button>
-                <button class="ghost-button" id="forgetAgentKeyButton" type="button">Forget key</button>
-                <button class="ghost-button" id="initAgentButton" type="button">Check API agent</button>
-                <button class="ghost-button" id="startSchedulerButton" type="button">Start auto</button>
-                <button class="ghost-button" id="stopSchedulerButton" type="button">Stop auto</button>
-              </div>
-            </div>
-
-            <div class="agent-chat-card">
-              <div class="agent-chat-header">
-                <div>
-                  <span>Agent chat</span>
-                  <strong>Tell it what to send</strong>
-                  <small>Example: send 1.5 USDC to 0x... at 18:30</small>
-                </div>
-                <button class="mini-button" id="clearAgentChatButton" type="button">Clear</button>
-              </div>
-              <div id="agentChatLog" class="agent-chat-log"></div>
-              <form id="agentChatForm" class="agent-chat-form">
-                <input id="agentChatInput" placeholder="send 1 USDC to 0x... in 5 minutes" autocomplete="off" />
-                <button class="primary-button" type="submit">Send</button>
-              </form>
-            </div>
-
             <div class="recipients">
               <div class="panel-header compact">
                 <h3>Allowlist</h3>
                 <button id="addRecipientButton" class="ghost-button" type="button">Add</button>
               </div>
               <div id="recipientList" class="recipient-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel agent-workbench" id="agent">
+          <div class="agent-chat-card">
+            <div class="agent-chat-header">
+              <div>
+                <span>Agent chat</span>
+                <strong>Tell it what to send</strong>
+                <small>Example: send 1.5 USDC to 0x... at 18:30</small>
+              </div>
+              <button class="mini-button" id="clearAgentChatButton" type="button">Clear</button>
+            </div>
+            <div id="agentChatLog" class="agent-chat-log"></div>
+            <form id="agentChatForm" class="agent-chat-form">
+              <input id="agentChatInput" placeholder="send 1 USDC to 0x... in 5 minutes" autocomplete="off" />
+              <button class="primary-button" type="submit">Send</button>
+            </form>
+          </div>
+
+          <div class="agent-key-card">
+            <div>
+              <span>Autonomous agent</span>
+              <strong id="agentWalletLabel">No agent key loaded</strong>
+              <small id="agentModeLabel">Uses Vercel API agent and Stabletrust HTTP API.</small>
+            </div>
+            <label>
+              Agent private key
+              <input id="agentPrivateKeyInput" type="password" placeholder="0x..." autocomplete="off" spellcheck="false" />
+            </label>
+            <label class="check-row">
+              <input id="rememberAgentKeyCheck" type="checkbox" />
+              <span>Remember test agent key in this browser</span>
+            </label>
+            <div class="wallet-actions">
+              <button class="primary-button" id="loadAgentKeyButton" type="button">Load key</button>
+              <button class="ghost-button" id="forgetAgentKeyButton" type="button">Forget key</button>
+              <button class="ghost-button" id="initAgentButton" type="button">Check API agent</button>
+              <button class="ghost-button" id="startSchedulerButton" type="button">Start auto</button>
+              <button class="ghost-button" id="stopSchedulerButton" type="button">Stop auto</button>
             </div>
           </div>
         </section>

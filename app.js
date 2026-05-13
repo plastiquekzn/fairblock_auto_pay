@@ -235,15 +235,12 @@ function renderMetrics() {
 
   els.queueMetricLabel.textContent = String(activeQueue.length);
   els.nextPaymentDetail.textContent = next
-    ? `${next.due} · ${getRecipient(next.recipientId)?.name || "Unknown"}`
+    ? `${next.due} - ${getRecipient(next.recipientId)?.name || "Unknown"}`
     : "No queued transfers";
 
-  const checks = [
-    document.querySelector("#allowlistCheck").checked,
-    document.querySelector("#approvalSelect").value === "yes"
-  ].filter(Boolean).length;
+  const checks = [document.querySelector("#allowlistCheck").checked].filter(Boolean).length;
   els.agentMetricLabel.textContent = state.agent.address ? "Loaded" : "Not loaded";
-  els.policyChecksLabel.textContent = `${readyQueue.length} ready · ${checks} checks active`;
+  els.policyChecksLabel.textContent = `${readyQueue.length} ready - ${checks} check active`;
 }
 
 function renderRecipients() {
@@ -318,7 +315,7 @@ function renderQueue() {
     .join("");
 
   if (!els.queueList.innerHTML) {
-    els.queueList.innerHTML = `<div class="queue-item"><strong>No queued transfers</strong><span class="muted-line">Create a rule to schedule the next private payment.</span></div>`;
+    els.queueList.innerHTML = `<div class="queue-item"><strong>No queued transfers</strong><span class="muted-line">Create or run a confidential payment above.</span></div>`;
   }
 }
 
@@ -1056,7 +1053,7 @@ async function handleAgentChat(event) {
       await executeItem(item.id);
     } else {
       if (!state.agent.running) startScheduler();
-      addChatMessage("agent", `Scheduled ${money(amount)} to ${recipient.name} for ${item.due}. No approval needed.`);
+      addChatMessage("agent", `Scheduled ${money(amount)} to ${recipient.name} for ${item.due}.`);
     }
   } catch (error) {
     addChatMessage("agent", error.message);
@@ -1118,17 +1115,15 @@ async function executeItem(id) {
   }
 }
 
-function createRule(event) {
+async function createRule(event) {
   event.preventDefault();
   const recipientId = document.querySelector("#recipientSelect").value;
   const amount = Number.parseFloat(document.querySelector("#amountInput").value || "0");
   const token = document.querySelector("#tokenSelect").value;
-  const cadence = document.querySelector("#cadenceSelect").value;
-  const time = document.querySelector("#timeInput").value;
-  const requiresApproval = document.querySelector("#approvalSelect").value === "yes";
-  const agentName = document.querySelector("#agentName").value.trim() || "Autopay agent";
+  const action = event.submitter?.value === "approve" ? "approve" : "run";
+  const recipient = getRecipient(recipientId);
 
-  if (!recipientId || !getRecipient(recipientId)) {
+  if (!recipientId || !recipient) {
     showToast("Add a recipient first.");
     return;
   }
@@ -1138,39 +1133,32 @@ function createRule(event) {
     return;
   }
 
-  const [hours, minutes] = time.split(":").map(Number);
-  const dueAt = new Date();
-  dueAt.setHours(hours || 0, minutes || 0, 0, 0);
-  if (dueAt.getTime() < Date.now()) {
-    dueAt.setDate(dueAt.getDate() + 1);
-  }
-
   const item = {
     id: crypto.randomUUID(),
-    ruleName: agentName,
+    ruleName: "Private payment",
     recipientId,
     amount,
     token,
-    cadence,
-    due: cadence === "once" ? `Today, ${time}` : `Next ${cadence}, ${time}`,
-    dueAt: dueAt.getTime(),
-    approved: !requiresApproval,
-    status: requiresApproval ? "waiting" : "ready"
+    cadence: "once",
+    due: "Now",
+    dueAt: Date.now(),
+    approved: true,
+    status: "ready"
   };
 
   state.queue.unshift(item);
   saveState();
-  addActivity("Rule created", `${agentName} scheduled ${money(amount, token)} for ${getRecipient(recipientId).name}.`);
+  addActivity("Payment approved", `${money(amount, token)} to ${recipient.name} is ready.`);
   renderAll();
-  showToast("Rule created");
+  if (action === "run") {
+    await executeItem(item.id);
+  } else {
+    showToast("Payment approved");
+  }
 }
 
 function resetRule() {
-  document.querySelector("#agentName").value = "";
   document.querySelector("#amountInput").value = "1.00";
-  document.querySelector("#cadenceSelect").value = "once";
-  document.querySelector("#timeInput").value = "18:00";
-  document.querySelector("#approvalSelect").value = "yes";
   renderAll();
 }
 
@@ -1313,7 +1301,6 @@ els.clearAgentChatButton.addEventListener("click", () => {
   "#amountInput",
   "#tokenSelect",
   "#allowlistCheck",
-  "#approvalSelect",
   "#testAmountInput"
 ].forEach((selector) => {
   document.querySelector(selector).addEventListener("input", () => {

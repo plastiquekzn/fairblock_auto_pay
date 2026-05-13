@@ -6,33 +6,30 @@
 
 Stabletrust Autopay Studio - тестнетный no-code интерфейс для confidential USDC-платежей через Fairblock Stabletrust на Base Sepolia.
 
-В приложении есть:
+В приложении можно:
 
-- подключение MetaMask или другого EVM-кошелька;
-- активация Fairblock/Stabletrust confidential account;
-- deposit public test USDC в confidential balance;
-- confidential transfer на другой Fairblock account;
-- withdraw обратно в public USDC;
-- очередь задач и простой планировщик;
-- API-agent режим для демо с отдельным testnet private key;
-- Agent Chat для команд вроде `отправь 1 USDC 0x... сейчас`.
+- подключить EVM-кошелек;
+- активировать Fairblock/Stabletrust confidential account;
+- внести public test USDC в confidential balance;
+- отправить confidential USDC другому активированному аккаунту;
+- вывести confidential USDC обратно в public USDC;
+- отправлять платежи через простую форму `Confidential payment`;
+- использовать Agent Chat для команд вроде `send 1 USDC to 0x... at 18:30`.
 
 Это прототип для тестнета. Не используй основной кошелек и не вставляй private key от кошелька с реальными средствами.
 
-### 2. Что нужно подготовить
+### 2. Что подготовить
 
-Создай новые тестовые кошельки.
+Создай новые тестовые кошельки:
 
-Рекомендуемый минимум:
+- `Sender wallet` - отправитель.
+- `Receiver wallet` - получатель.
+- `Agent wallet` - отдельный кошелек только для API-agent demo.
 
-- `Sender wallet` - кошелек отправителя.
-- `Receiver wallet` - кошелек получателя.
-- `Agent wallet` - отдельный кошелек только для автономного агента.
-
-Каждый кошелек, который делает транзакции, должен иметь:
+Кошелькам, которые делают транзакции, нужны:
 
 - Base Sepolia ETH для газа;
-- Base Sepolia test USDC для депозитов и переводов.
+- Base Sepolia test USDC.
 
 Base Sepolia:
 
@@ -48,150 +45,133 @@ Test USDC:
 0x036CbD53842c5426634e7929541eC2318f3dCF7e
 ```
 
-### 3. Как открыть приложение
+Удобный способ теста: открой sender wallet в одном браузере, receiver wallet в другом.
 
-Если проект задеплоен на Vercel, просто открой публичную ссылку деплоя.
+### 3. Активация Fairblock account
 
-Для локальной разработки:
+На sender wallet:
 
-```bash
-npm install
-npm run dev
-```
+1. Открой `https://fairblock-auto-pay.vercel.app`.
+2. Нажми `Connect`.
+3. Нажми `Base Sepolia`.
+4. Нажми `Activate Fairblock account`.
+5. Подпиши запросы в кошельке.
+6. Нажми `Refresh balance`.
 
-Потом открой:
-
-```text
-http://localhost:3000
-```
-
-Страница простых платежных действий:
-
-```text
-/payment.html
-```
-
-### 4. Как активировать Fairblock account
-
-1. Подключи кошелек через `Connect`.
-2. Переключись на `Base Sepolia`.
-3. Нажми `Activate Fairblock account`.
-4. Подпиши запросы в кошельке.
-5. Нажми `Refresh balance`.
-
-Это нужно сделать и для отправителя, и для получателя. Если получатель не активировал account, перевод может упасть с ошибкой:
+То же самое нужно сделать на receiver wallet. Если получатель не активирован, перевод может упасть с ошибкой:
 
 ```text
 Recipient account does not exist
 ```
 
-### 5. Как пополнить confidential balance
+### 4. Deposit в confidential balance
 
-Confidential transfer тратит не public USDC напрямую, а confidential USDC.
+Confidential transfer тратит confidential USDC, а не public USDC напрямую.
 
-1. Подключи `Sender wallet`.
+1. Подключи sender wallet.
 2. Убедись, что есть Base Sepolia ETH и test USDC.
 3. Активируй Fairblock account.
-4. Введи сумму в `Amount`.
+4. В блоке кошелька введи сумму в `Amount`.
 5. Нажми `Deposit confidential`.
 6. Дождись транзакции.
 7. Нажми `Refresh balance`.
 
-### 6. Как отправить confidential payment
+После этого public USDC превращается в confidential USDC внутри Stabletrust.
 
-Открой `/payment.html`.
+### 5. Отправка confidential payment
 
-1. Нажми `Connect`.
-2. Выбери `Send confidential payment`.
-3. Вставь адрес получателя.
+На главной странице используй блок `Confidential payment`.
+
+1. Добавь получателя через `+` или `Add`.
+2. Выбери получателя.
+3. Нажми `Check recipient`.
 4. Введи сумму.
-5. Нажми `Check recipient`.
-6. Если получатель готов, нажми `Send confidential payment`.
+5. Нажми `Approve payment`, если хочешь сначала положить платеж в очередь.
+6. Нажми `Run now`, если хочешь сразу отправить.
 
-После отправки в Activity на главной странице появится запись. Если доступен реальный tx hash, рядом будет ссылка `View tx` на BaseScan.
+Если платеж был добавлен в очередь, его можно запустить из `Transfer queue` кнопкой `Run`.
 
-### 7. Как получателю увидеть деньги
+### 6. Как получателю увидеть деньги
 
-На `Receiver wallet`:
+На receiver wallet:
 
-1. Открой `/payment.html`.
-2. Подключи кошелек.
-3. Активируй Fairblock account, если ещё не активирован.
-4. Выбери `Check incoming confidential payment`.
+1. Открой приложение во втором браузере.
+2. Нажми `Connect`.
+3. Нажми `Base Sepolia`.
+4. Активируй Fairblock account, если еще не активирован.
 5. Нажми `Refresh balance`.
 
 Сумма должна появиться в `Confidential USDC`.
 
-### 8. Как вывести в public USDC
+### 7. Withdraw to public
 
 На кошельке, который получил confidential USDC:
 
-1. Открой `/payment.html`.
-2. Выбери `Withdraw to public`.
-3. Введи сумму.
-4. Нажми `Withdraw to public USDC`.
-5. Дождись транзакции.
+1. Введи сумму в `Amount`.
+2. Нажми `Withdraw to public`.
+3. Подтверди транзакцию в кошельке.
+4. Нажми `Refresh balance`.
 
-### 9. Manual tasks и allowlist
+После этого USDC снова станет public.
 
-На главной странице есть `Payment task`.
+### 8. Agent Chat
 
-1. Добавь получателя через `+` или `Add`.
-2. Выбери получателя.
-3. Введи сумму.
-4. Выбери время.
-5. Если не нужен ручной approval, выбери `Requires approval: No`.
-6. Нажми `Create task`.
-7. В `Transfer queue` нажми `Run`, если хочешь выполнить задачу вручную.
+Agent Chat находится в отдельном горизонтальном блоке: чат слева, настройки API-agent справа.
 
-### 10. API-agent режим
-
-Vercel деплоит web UI и same-origin API endpoints `/api/agent/*`. Поэтому публичная версия не должна запрашивать доступ к локальным сервисам на устройстве.
-
-В UI:
-
-1. Используй только отдельный `Agent wallet`.
-2. Пополни его Base Sepolia ETH и test USDC.
-3. Вставь private key в `Agent private key`.
-4. Нажми `Load key`.
-5. Нажми `Check API agent`.
-
-Если включить `Remember test agent key in this browser`, тестовый private key сохранится в `localStorage` этого браузера. Запросы к `/api/agent/*` будут отправлять этот тестовый ключ на Vercel API, чтобы Vercel мог выполнить Stabletrust API call без localhost-разрешений. Это удобно для демо, но используй только отдельный testnet `Agent wallet`. Кнопка `Forget key` удаляет сохраненный ключ.
-
-Для production нужен безопасный backend, smart account/session key, embedded wallet, TEE, MPC или другая custody-архитектура.
-
-### 11. Agent Chat
-
-После подготовки API-agent можно писать команды:
+Примеры команд:
 
 ```text
-отправь 1 USDC 0x1234... сейчас
-отправь 2.5 USDC 0x1234... через 5 минут
+send 1 USDC to 0x1234... now
+send 2.5 USDC to 0x1234... in 5 minutes
 send 1.5 USDC to 0x1234... at 18:30
 ```
 
-Чат:
+Сейчас это простой parser, не LLM. Он:
 
 - находит сумму;
 - находит адрес или имя из allowlist;
 - добавляет новый адрес в allowlist;
-- создает задачу без approval;
+- создает задачу платежа;
 - отправляет сразу, если время уже наступило;
-- планирует задачу, если время в будущем.
+- оставляет будущий платеж в очереди, если указано время.
 
-Сейчас это простой parser, не LLM.
+### 9. API-agent режим
 
-### 12. Что видно в explorer
+Vercel деплоит web UI и same-origin API endpoints `/api/agent/*`. Поэтому публичная версия не должна просить доступ к локальным сервисам на устройстве.
 
-Explorer может показывать contract interaction, tx hash, gas и timestamp. Но confidential flow не выглядит как обычный ERC-20 transfer `A sent exact public USDC amount to B`.
+Для API-agent:
 
-### 13. Безопасность
+1. Создай отдельный `Agent wallet`.
+2. Пополни его Base Sepolia ETH и test USDC.
+3. Вставь private key в `Agent private key`.
+4. Нажми `Load key`.
+5. Нажми `Check API agent`.
+6. Используй Agent Chat или `Run now`.
+
+Если включить `Remember test agent key in this browser`, тестовый private key сохранится в `localStorage` этого браузера. Запросы к `/api/agent/*` будут отправлять этот тестовый ключ на Vercel API, чтобы Vercel мог выполнить Stabletrust API call без localhost-разрешений.
+
+Используй это только с отдельным testnet wallet. `Forget key` удаляет сохраненный ключ.
+
+Для production нужен безопасный backend, smart account/session key, embedded wallet, TEE, MPC или другая custody-архитектура.
+
+### 10. Что видно в explorer
+
+BaseScan показывает:
+
+- contract interaction;
+- tx hash;
+- gas;
+- timestamp.
+
+BaseScan не показывает обычную строку `A sent exact USDC amount to B`. В этом и смысл confidential flow: on-chain footprint есть, но платежные данные не раскрываются как обычный ERC-20 transfer.
+
+### 11. Безопасность
 
 Нельзя:
 
 - вставлять private key основного кошелька;
 - хранить реальные средства на agent wallet;
-- использовать этот прототип как production wallet.
+- использовать прототип как production wallet.
 
 Можно:
 
@@ -207,33 +187,30 @@ Explorer может показывать contract interaction, tx hash, gas и t
 
 Stabletrust Autopay Studio is a testnet no-code interface for confidential USDC payments using Fairblock Stabletrust on Base Sepolia.
 
-The app includes:
+The app lets you:
 
-- MetaMask/EVM wallet connection;
-- Fairblock/Stabletrust confidential account activation;
-- public test USDC deposits into confidential balance;
-- confidential transfers to another initialized account;
-- withdrawals back to public USDC;
-- payment task queue and a simple scheduler;
-- API-agent demo mode with a dedicated testnet private key;
-- Agent Chat for commands like `send 1 USDC to 0x... now`.
+- connect an EVM wallet;
+- activate a Fairblock/Stabletrust confidential account;
+- deposit public test USDC into a confidential balance;
+- send confidential USDC to another activated account;
+- withdraw confidential USDC back to public USDC;
+- send payments from the simple `Confidential payment` form;
+- use Agent Chat for commands like `send 1 USDC to 0x... at 18:30`.
 
 This is a testnet prototype. Do not use your main wallet and do not paste a private key that controls real funds.
 
 ### 2. What You Need
 
-Create fresh test wallets.
-
-Recommended setup:
+Create fresh test wallets:
 
 - `Sender wallet` - sends payments.
 - `Receiver wallet` - receives confidential payments.
-- `Agent wallet` - a separate wallet used only for autonomous agent demos.
+- `Agent wallet` - used only for API-agent demos.
 
-Every wallet that sends transactions needs:
+Wallets that submit transactions need:
 
 - Base Sepolia ETH for gas;
-- Base Sepolia test USDC for deposits and transfers.
+- Base Sepolia test USDC.
 
 Base Sepolia:
 
@@ -249,120 +226,80 @@ Test USDC:
 0x036CbD53842c5426634e7929541eC2318f3dCF7e
 ```
 
-### 3. Open The App
+Testing tip: open the sender wallet in one browser and the receiver wallet in another.
 
-If the project is deployed to Vercel, open the public deployment URL.
+### 3. Activate A Fairblock Account
 
-For local development:
+On the sender wallet:
 
-```bash
-npm install
-npm run dev
-```
+1. Open `https://fairblock-auto-pay.vercel.app`.
+2. Click `Connect`.
+3. Click `Base Sepolia`.
+4. Click `Activate Fairblock account`.
+5. Sign wallet prompts.
+6. Click `Refresh balance`.
 
-Then open:
-
-```text
-http://localhost:3000
-```
-
-Simple payment tools:
-
-```text
-/payment.html
-```
-
-### 4. Activate A Fairblock Account
-
-1. Connect your wallet with `Connect`.
-2. Switch to `Base Sepolia`.
-3. Click `Activate Fairblock account`.
-4. Sign wallet prompts.
-5. Click `Refresh balance`.
-
-Both sender and receiver need an activated account. If the receiver is not initialized, the transfer can fail with:
+Do the same on the receiver wallet. If the receiver is not activated, transfers can fail with:
 
 ```text
 Recipient account does not exist
 ```
 
-### 5. Deposit Into Confidential Balance
+### 4. Deposit Into Confidential Balance
 
 Confidential transfers spend confidential USDC, not public USDC directly.
 
-1. Connect the `Sender wallet`.
+1. Connect the sender wallet.
 2. Make sure it has Base Sepolia ETH and test USDC.
 3. Activate the Fairblock account.
-4. Enter an amount.
+4. Enter amount in the wallet `Amount` field.
 5. Click `Deposit confidential`.
 6. Wait for the transaction.
 7. Click `Refresh balance`.
 
-### 6. Send A Confidential Payment
+Your public USDC is now confidential inside Stabletrust.
 
-Open `/payment.html`.
+### 5. Send A Confidential Payment
 
-1. Click `Connect`.
-2. Select `Send confidential payment`.
-3. Paste the receiver address.
-4. Enter the amount.
-5. Click `Check recipient`.
-6. If the receiver is ready, click `Send confidential payment`.
+Use the `Confidential payment` block on the main page.
 
-After submission, Activity records on the main page include a `View tx` BaseScan link when a real transaction hash is available.
+1. Add a recipient with `+` or `Add`.
+2. Select the recipient.
+3. Click `Check recipient`.
+4. Enter amount.
+5. Click `Approve payment` if you want to place it in the queue first.
+6. Click `Run now` if you want to send immediately.
 
-### 7. Receiver Balance
+If a payment is placed in the queue, it can still be executed from `Transfer queue` with `Run`.
 
-On the `Receiver wallet`:
+### 6. Receiver Balance
 
-1. Open `/payment.html`.
-2. Connect the wallet.
-3. Activate the Fairblock account if needed.
-4. Select `Check incoming confidential payment`.
+On the receiver wallet:
+
+1. Open the app in the second browser.
+2. Click `Connect`.
+3. Click `Base Sepolia`.
+4. Activate the Fairblock account if needed.
 5. Click `Refresh balance`.
 
 The received amount should appear under `Confidential USDC`.
 
-### 8. Withdraw To Public USDC
+### 7. Withdraw To Public
 
 On the wallet that received confidential USDC:
 
-1. Open `/payment.html`.
-2. Select `Withdraw to public`.
-3. Enter the amount.
-4. Click `Withdraw to public USDC`.
-5. Wait for the transaction.
+1. Enter amount.
+2. Click `Withdraw to public`.
+3. Confirm in the wallet.
+4. Click `Refresh balance`.
 
-### 9. Manual Tasks And Allowlist
+The USDC becomes public again.
 
-On the main page:
+### 8. Agent Chat
 
-1. Add a recipient with `+` or `Add`.
-2. Select the recipient.
-3. Enter amount and execution time.
-4. Set `Requires approval: No` if no manual approval is needed.
-5. Click `Create task`.
-6. Click `Run` in `Transfer queue` to execute manually.
+Agent Chat is in one horizontal block: chat on the left, API-agent controls on the right.
 
-### 10. API-Agent Mode
-
-Vercel deploys the web UI and same-origin API endpoints under `/api/agent/*`. The public version should not request access to local services on the user's device.
-
-In the UI:
-
-1. Use a dedicated `Agent wallet`.
-2. Fund it with Base Sepolia ETH and test USDC.
-3. Paste its private key into `Agent private key`.
-4. Click `Load key`.
-5. Click `Check API agent`.
-
-If `Remember test agent key in this browser` is enabled, the test private key is stored in this browser's `localStorage`. Requests to `/api/agent/*` include that test key when needed, so Vercel can execute the Stabletrust API call without localhost permissions. This is convenient for demos, but use only a dedicated testnet `Agent wallet`. `Forget key` removes the saved key.
-
-Production needs a secure backend, smart account/session key, embedded wallet, TEE, MPC, or another custody architecture.
-
-### 11. Agent Chat
-
-After the API-agent is ready, type commands like:
+Example commands:
 
 ```text
 send 1 USDC to 0x1234... now
@@ -370,22 +307,46 @@ send 2.5 USDC to 0x1234... in 5 minutes
 send 1.5 USDC to 0x1234... at 18:30
 ```
 
-The chat:
+It is currently a simple parser, not an LLM. It:
 
 - extracts amount;
 - finds an address or allowlist name;
-- adds new addresses to allowlist;
-- creates tasks without approval;
+- adds a new address to allowlist;
+- creates a payment task;
 - sends immediately if due now;
-- schedules future tasks.
+- keeps future payments in the queue.
 
-It is currently a simple parser, not an LLM.
+### 9. API-Agent Mode
 
-### 12. Explorer Visibility
+Vercel deploys the web UI and same-origin API endpoints under `/api/agent/*`. The public version should not request access to local services on the user's device.
 
-Explorers can show contract interaction, tx hash, gas, and timestamp. The confidential flow is not a plain ERC-20 transfer like `A sent exact public USDC amount to B`.
+For API-agent:
 
-### 13. Safety
+1. Create a dedicated `Agent wallet`.
+2. Fund it with Base Sepolia ETH and test USDC.
+3. Paste its private key into `Agent private key`.
+4. Click `Load key`.
+5. Click `Check API agent`.
+6. Use Agent Chat or `Run now`.
+
+If `Remember test agent key in this browser` is enabled, the test private key is stored in this browser's `localStorage`. Requests to `/api/agent/*` include that test key when needed, so Vercel can execute the Stabletrust API call without localhost permissions.
+
+Use this only with a dedicated testnet wallet. `Forget key` removes the saved key.
+
+Production needs a secure backend, smart account/session key, embedded wallet, TEE, MPC, or another custody architecture.
+
+### 10. Explorer Visibility
+
+BaseScan shows:
+
+- contract interaction;
+- tx hash;
+- gas;
+- timestamp.
+
+BaseScan does not show a normal line like `A sent exact USDC amount to B`. That is the point of the confidential flow: the on-chain footprint exists, but payment data is not exposed like a standard ERC-20 transfer.
+
+### 11. Safety
 
 Do not:
 
