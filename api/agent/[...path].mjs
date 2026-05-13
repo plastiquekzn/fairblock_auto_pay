@@ -17,7 +17,11 @@ function send(response, status, payload) {
 
 function getPath(request) {
   const value = request.query?.path;
-  const path = Array.isArray(value) ? value.join("/") : value || "";
+  let path = Array.isArray(value) ? value.join("/") : value || "";
+  if (!path && request.url) {
+    const url = new URL(request.url, "https://vercel.local");
+    path = url.pathname.replace(/^\/api\/agent\/?/, "");
+  }
   return path.startsWith("agent/") ? path.slice("agent/".length) : path;
 }
 
