@@ -704,7 +704,7 @@ function loadAgentKey() {
     if (!/^0x[0-9a-fA-F]{64}$/.test(privateKey)) {
       throw new Error("Private key must be 0x + 64 hex characters.");
     }
-    agentApiPost("/agent/key", { privateKey }).then((payload) => {
+    agentApiPost("/key", { privateKey }).then((payload) => {
       state.agent.wallet = null;
       state.agent.address = payload.address;
       state.agent.keys = { api: true };
@@ -736,7 +736,7 @@ async function initializeAgentAccount() {
       throw new Error("Load agent private key first.");
     }
     showToast("Checking agent through Stabletrust API...");
-    const payload = await agentApiPost("/agent/balance", { tokenAddress: TOKEN_ADDRESS });
+    const payload = await agentApiPost("/balance", { tokenAddress: TOKEN_ADDRESS });
     state.agent.keys = { api: true };
     addActivity("Agent API checked", `Stabletrust API balance response received for ${shortenAddress(state.agent.address)}.`);
     renderAll();
@@ -795,7 +795,7 @@ async function stabletrustTransfer(item) {
   const recipient = getRecipient(item.recipientId);
   const recipientAddress = normalizeAddress(recipient.address);
   if (state.agent.address) {
-    const payload = await agentApiPost("/agent/transfer", {
+    const payload = await agentApiPost("/transfer", {
       recipientAddress,
       tokenAddress: TOKEN_ADDRESS,
       amount: String(ethers.parseUnits(String(item.amount), TOKEN_DECIMALS)),
