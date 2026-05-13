@@ -702,6 +702,7 @@ legend {
 .activity-log {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .recipient,
@@ -709,6 +710,7 @@ legend {
 .log-item {
   display: grid;
   gap: 6px;
+  min-width: 0;
   padding: 12px;
   border: 1px solid rgba(155, 217, 246, 0.3);
   border-radius: 8px;
@@ -720,6 +722,12 @@ legend {
   align-items: center;
 }
 
+.recipient > div,
+.queue-item > div,
+.log-item > div {
+  min-width: 0;
+}
+
 .address,
 .muted-line {
   overflow: hidden;
@@ -728,6 +736,11 @@ legend {
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.log-item .muted-line {
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .tx-link {

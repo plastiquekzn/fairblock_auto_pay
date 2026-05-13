@@ -165,6 +165,32 @@ function explorerTxUrl(hash) {
   return `${BASE_SEPOLIA.blockExplorerUrl}/tx/${hash}`;
 }
 
+function extractTransactionHash(value) {
+  if (!value) return "";
+  if (typeof value === "string") return isTransactionHash(value) ? value : "";
+  if (typeof value !== "object") return "";
+
+  const directKeys = ["hash", "txHash", "transactionHash", "transaction_hash", "tx_hash"];
+  for (const key of directKeys) {
+    if (isTransactionHash(value[key])) return value[key];
+  }
+
+  for (const nested of Object.values(value)) {
+    const found = extractTransactionHash(nested);
+    if (found) return found;
+  }
+  return "";
+}
+
+function extractTransactionLabel(value) {
+  const hash = extractTransactionHash(value);
+  if (hash) return hash;
+  if (typeof value === "string" && value) return value;
+  if (value?.id) return String(value.id);
+  if (value?.status) return String(value.status);
+  return "submitted";
+}
+
 function formatUnits(value, decimals = TOKEN_DECIMALS) {
   return Number(ethers.formatUnits(value || 0n, decimals)).toLocaleString("en-US", {
     minimumFractionDigits: 2,
@@ -771,8 +797,12 @@ async function stabletrustTransfer(item) {
       amount: String(ethers.parseUnits(String(item.amount), TOKEN_DECIMALS)),
       waitForFinalization: true
     });
+    const hash = extractTransactionHash(payload);
     return {
-      receipt: { hash: payload.receipt?.hash || payload.hash || "stabletrust-api-transfer" }
+      receipt: {
+        hash,
+        label: hash || extractTransactionLabel(payload)
+      }
     };
   }
 
@@ -794,7 +824,7 @@ async function stabletrustTransfer(item) {
       useOffchainVerify: false
     }
   ).then((receipt) => ({
-    receipt: { hash: receipt.hash }
+    receipt: { hash: receipt.hash, label: receipt.hash }
   }));
 }
 
@@ -1027,7 +1057,7 @@ async function executeItem(id) {
     saveState();
     addActivityWithMeta(
       "Confidential transfer submitted",
-      `${money(item.amount, item.token)} to ${getRecipient(item.recipientId).name}; tx ${result.receipt?.hash || "pending"}.`,
+      `${money(item.amount, item.token)} to ${getRecipient(item.recipientId).name}; tx ${result.receipt?.label || result.receipt?.hash || "submitted"}.`,
       { txHash: result.receipt?.hash }
     );
     renderAll();
