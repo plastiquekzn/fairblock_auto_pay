@@ -10,7 +10,7 @@ The app lets users:
 - send confidential USDC to another initialized account;
 - withdraw confidential USDC back to public USDC;
 - create scheduled payment tasks;
-- try a local autonomous API-agent mode for testnet demos.
+- try an autonomous API-agent mode for testnet demos.
 
 Detailed bilingual guide:
 
@@ -80,28 +80,22 @@ This is a Vite app. Vercel can deploy the web UI with the default Vite settings:
 - Build command: `npm run build`
 - Output directory: `dist`
 
-The deployed Vercel UI supports the wallet-based Stabletrust SDK flow.
+The deployed Vercel UI supports the wallet-based Stabletrust SDK flow and same-origin API-agent endpoints under `/api/agent/*`. Because the API is on the same Vercel domain, the browser should not request access to local services on the user's device.
 
-Important: the autonomous private-key agent uses `api-agent.mjs`, which is a local Node.js demo server. It is not deployed as part of the static Vercel frontend. For a production agent, move private-key handling to a secure backend, embedded wallet, smart-account session key, TEE, MPC, or another dedicated custody architecture.
+For production, move private-key handling to a secure backend, embedded wallet, smart-account session key, TEE, MPC, or another dedicated custody architecture.
 
-## Local API-Agent Demo
+## API-Agent Demo
 
-The local agent is useful for testnet demos where a dedicated agent wallet sends through the Stabletrust HTTP API.
+The API-agent mode is useful for testnet demos where a dedicated agent wallet sends through the Stabletrust HTTP API.
 
-Start it locally:
-
-```bash
-npm run agent
-```
-
-Then in the UI:
+In the UI:
 
 1. Paste the dedicated testnet `Agent wallet` private key.
 2. Click `Load key`.
 3. Click `Check API agent`.
 4. Use the task builder or Agent Chat.
 
-For convenience, `Remember test agent key in this browser` can store the dedicated testnet agent key in this browser's `localStorage`. Use this only with a fresh testnet wallet. Click `Forget key` to remove it.
+For convenience, `Remember test agent key in this browser` stores the dedicated testnet agent key in this browser's `localStorage`. Requests to `/api/agent/*` include that test key when needed, so Vercel can execute the Stabletrust API call without asking for localhost permissions. Use this only with a fresh testnet wallet. Click `Forget key` to remove it.
 
 ## Agent Chat
 
@@ -115,7 +109,7 @@ send 2.5 USDC to 0x1234... in 5 minutes
 send 1.5 USDC to 0x1234... at 18:30
 ```
 
-If the agent is ready, the app creates an approved task. If the task is due immediately, it sends through the local API-agent. If it is scheduled for later, the browser scheduler checks due transfers while the page is open.
+If the agent is ready, the app creates an approved task. If the task is due immediately, it sends through the Vercel API-agent. If it is scheduled for later, the browser scheduler checks due transfers while the page is open.
 
 ## Explorer Links
 
@@ -125,7 +119,7 @@ Submitted deposit, withdrawal, and transfer activity records include a `View tx`
 
 The browser flow uses `@fairblock/stabletrust`.
 
-The local API-agent is wired around Stabletrust API semantics:
+The API-agent is wired around Stabletrust API semantics:
 
 - `POST https://stabletrust-api.fairblock.network/balance`
 - `POST https://stabletrust-api.fairblock.network/deposit`

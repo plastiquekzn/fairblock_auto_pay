@@ -7,7 +7,7 @@ globalThis.Buffer = globalThis.Buffer || Buffer;
 const API_BASE = "https://stabletrust-api.fairblock.network";
 const TOKEN_ADDRESS = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
 const TOKEN_DECIMALS = 6;
-const AGENT_API_BASE = "http://127.0.0.1:8787";
+const AGENT_API_BASE = "/api/agent";
 const BASE_SEPOLIA = {
   chainId: 84532,
   chainHex: "0x14a34",
@@ -639,10 +639,14 @@ function getTestAmount() {
 }
 
 async function agentApiPost(path, body = {}) {
+  const savedPrivateKey = getSavedAgentKey();
+  const payloadBody = savedPrivateKey && !body.privateKey
+    ? { privateKey: savedPrivateKey, ...body }
+    : body;
   const response = await fetch(`${AGENT_API_BASE}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
+    body: JSON.stringify(payloadBody)
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
